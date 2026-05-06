@@ -1,29 +1,11 @@
-# ============================================
-# Chef Adams — Cloudflare Pages Headers
-# ============================================
-
-# Service Worker : jamais mis en cache
 /sw.js
   Cache-Control: no-cache, no-store, must-revalidate
-  Content-Type: application/javascript; charset=utf-8
+  Service-Worker-Allowed: /
 
-# Manifest PWA
 /manifest.json
-  Cache-Control: public, max-age=86400
-  Content-Type: application/manifest+json
+  Cache-Control: no-cache
 
-# Icônes PWA : cache long (30 jours)
-/icons/*
-  Cache-Control: public, max-age=2592000, immutable
-
-# Page principale : network-first géré par SW,
-# mais on autorise un cache court côté CDN
-/index.html
-  Cache-Control: public, max-age=0, must-revalidate
-
-# Sécurité globale
 /*
-  X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(), microphone=(), geolocation=()

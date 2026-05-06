@@ -1,5 +1,5 @@
-// Chef Adams — Service Worker v1
-const CACHE_VERSION = 'v0';
+// Chef Adams — Service Worker v2
+const CACHE_VERSION = 'v2';
 const CACHE_NAME = 'chef-adams-' + CACHE_VERSION;
 
 const PRECACHE_URLS = [
@@ -29,7 +29,8 @@ self.addEventListener('activate', function(event) {
     caches.keys().then(function(cacheNames) {
       return Promise.all(
         cacheNames.filter(function(name) {
-          return name.startsWith('ruach-billard-') && name !== CACHE_NAME;
+          // ✅ CORRIGÉ : bon préfixe + exclusion du cache actuel
+          return name.startsWith('chef-adams-') && name !== CACHE_NAME;
         }).map(function(name) {
           console.log('[SW] Suppression cache obsolète:', name);
           return caches.delete(name);
@@ -52,14 +53,11 @@ self.addEventListener('fetch', function(event) {
   var isSameOrigin = url.origin === location.origin;
   var isFonts = url.hostname.includes('fonts.googleapis.com') || url.hostname.includes('fonts.gstatic.com');
   var isIbb = url.hostname.includes('i.ibb.co');
-  // ✅ Cloudflare Images (imagedelivery.net)
   var isCfImages = url.hostname.includes('imagedelivery.net');
 
   if (!isSameOrigin && !isFonts && !isIbb && !isCfImages) return;
 
-  // --- Cloudflare Images : cache-first, longue durée ---
-  // Cloudflare sert déjà les images via son CDN, mais on les met aussi en cache
-  // local pour le mode offline et la vitesse maximale.
+  // --- Cloudflare Images : cache-first ---
   if (isCfImages) {
     event.respondWith(
       caches.match(event.request).then(function(cached) {
@@ -101,7 +99,7 @@ self.addEventListener('fetch', function(event) {
     return;
   }
 
-  // --- Polices Google : cache-first (changent rarement) ---
+  // --- Polices Google : cache-first ---
   if (isFonts) {
     event.respondWith(
       caches.match(event.request).then(function(cached) {
