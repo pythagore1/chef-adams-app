@@ -21,6 +21,9 @@
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
 
+/data.json
+  Cache-Control: no-cache
+
 # Sécurité globale
 /*
   X-Frame-Options: DENY
