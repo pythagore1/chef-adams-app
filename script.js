@@ -945,7 +945,7 @@ function renderProducts(){
         chips+
         '<div class="card-price" id="cp-'+p.id+'">'+fmt(price)+' FCFA</div>'+
         '<div class="card-price-note">'+(p.qtyPricing&&p.qtyPricing.length>1?"Prix selon quantite":"")+(p.variants&&p.variants.length>1?" &bull; "+p.variants.length+" options":"")+'</div>'+
-        '<button class="btn-wa" onclick="event.stopPropagation();orderWA(\''+p.id+'\',0,1)">'+waIcon()+' '+tx("orderBtn")+'</button>'+
+        '<button class="btn-add-cart" onclick="event.stopPropagation();addToCart(\''+p.id+'\',0,1,this)">+ Ajouter au panier</button>'+
       '</div>';
     card.addEventListener("click",function(){openModal(p.id,0);});
     grid.appendChild(card);
@@ -996,8 +996,8 @@ function openModal(pid,vi){
         '</div>'+
       '</div>'+
       '<div class="pay-btns">'+
-        '<button class="btn-wa" style="font-size:13px;padding:12px" onclick="orderWAModal(\''+p.id+'\')">'+waIcon()+' '+tx("orderBtn")+'</button>'+
-        '<button class="btn-orange" style="font-size:13px;padding:12px" onclick="orderOrangeModal(\''+p.id+'\')">&#127825; '+tx("orangeBtn")+'</button>'+
+        '<button class="btn-add-cart" style="font-size:14px;padding:13px;margin-bottom:4px" onclick="addToCart(\''+p.id+'\',curVar,parseInt(document.getElementById(\'qty-'+p.id+'\').value)||1,null,true)">+ Ajouter au panier</button>'+
+        '<button class="btn-wa" style="font-size:12px;padding:9px;opacity:.75" onclick="orderWAModal(\''+p.id+'\')">'+waIcon()+' Commander ce plat seul</button>'+
       '</div>'+
     '</div>';
   document.getElementById("prodModal").classList.add("open");document.body.style.overflow="hidden";
@@ -1262,3 +1262,149 @@ applyLang();
   sp.style.opacity="0";
   setTimeout(function(){sp.style.display="none";},450);
 })();
+
+// ====== CART ======
+var cart = [];
+
+function addToCart(pid, vi, qty, btnEl, fromModal) {
+  var p = state.products.find(function(x){ return x.id === pid; });
+  if (!p) return;
+  var vi2 = vi || 0;
+  var v = p.variants && p.variants[vi2];
+  var price = getPrice(p, qty || 1, vi2);
+  var varName = (p.variants && p.variants.length > 1 && v) ? v.name : "";
+  var img = getMainImg(p, vi2);
+  var key = pid + "_" + vi2;
+  var existing = cart.find(function(c){ return c.key === key; });
+  if (existing) {
+    existing.qty += (qty || 1);
+  } else {
+    cart.push({ key: key, pid: pid, vid: vi2, name: p.name, varName: varName, qty: qty || 1, price: price, img: img, unit: p.unit || "portion" });
+  }
+  updateCartUI();
+  if (btnEl) {
+    btnEl.textContent = "✓ Ajouté !";
+    btnEl.classList.add("added");
+    setTimeout(function(){ btnEl.textContent = "+ Ajouter"; btnEl.classList.remove("added"); }, 1500);
+  }
+  if (fromModal) { closeModal(); showToast("Ajouté au panier ! 🛒"); }
+  else { showToast(p.name + " ajouté au panier !"); }
+}
+
+function removeFromCart(key) {
+  cart = cart.filter(function(c){ return c.key !== key; });
+  updateCartUI();
+  renderCartItems();
+}
+
+function updateCartQty(key, delta) {
+  var item = cart.find(function(c){ return c.key === key; });
+  if (!item) return;
+  item.qty = Math.max(1, item.qty + delta);
+  var p = state.products.find(function(x){ return x.id === item.pid; });
+  if (p) item.price = getPrice(p, item.qty, item.vid);
+  updateCartUI();
+  renderCartItems();
+}
+
+function clearCart() {
+  if (!confirm("Vider le panier ?")) return;
+  cart = [];
+  updateCartUI();
+  renderCartItems();
+}
+
+function cartTotal() {
+  return cart.reduce(function(sum, c){ return sum + c.price * c.qty; }, 0);
+}
+
+function cartCount() {
+  return cart.reduce(function(sum, c){ return sum + c.qty; }, 0);
+}
+
+function updateCartUI() {
+  var count = cartCount();
+  var fab = document.getElementById("cartFab");
+  var navBtn = document.getElementById("navCartBtn");
+  if (fab) fab.classList.toggle("visible", count > 0);
+  if (navBtn) navBtn.classList.toggle("visible", count > 0);
+  var els = { fabCartCount: count, navCartCount: count };
+  Object.keys(els).forEach(function(id){ var el = document.getElementById(id); if (el) el.textContent = els[id]; });
+  var hdr = document.getElementById("cartHdrCount");
+  if (hdr) hdr.textContent = count + (count > 1 ? " articles" : " article");
+  var fab2 = document.getElementById("fabCartLabel");
+  if (fab2) fab2.textContent = count > 0 ? count + " article" + (count > 1 ? "s" : "") + " · " + fmt(cartTotal()) + " FCFA" : "Panier";
+  var footer = document.getElementById("cartFooter");
+  if (footer) footer.style.display = count > 0 ? "block" : "none";
+  var tv = document.getElementById("cartTotalVal");
+  if (tv) tv.textContent = fmt(cartTotal()) + " FCFA";
+}
+
+function renderCartItems() {
+  var el = document.getElementById("cartItemsList");
+  if (!el) return;
+  if (!cart.length) {
+    el.innerHTML = '<div class="cart-empty"><div class="cart-empty-icon">🛒</div><p>Votre panier est vide<br/><span style="color:var(--gray);font-size:12px">Ajoutez des plats depuis le menu.</span></p></div>';
+    return;
+  }
+  el.innerHTML = cart.map(function(item) {
+    var imgH = item.img
+      ? '<img src="' + item.img + '" alt="' + item.name + '" style="width:100%;height:100%;object-fit:cover"/>'
+      : item.name.charAt(0);
+    return '<div class="cart-item">' +
+      '<div class="cart-item-img">' + imgH + '</div>' +
+      '<div class="cart-item-info">' +
+        '<div class="cart-item-name">' + item.name + '</div>' +
+        '<div class="cart-item-variant">' + (item.varName ? item.varName + " · " : "") + fmt(item.price) + ' FCFA / ' + item.unit + '</div>' +
+        '<div class="cart-item-row">' +
+          '<div class="cart-qty-ctrl">' +
+            '<button class="cart-qty-btn" onclick="updateCartQty(\'' + item.key + '\',-1)">&#8722;</button>' +
+            '<div class="cart-qty-val">' + item.qty + '</div>' +
+            '<button class="cart-qty-btn" onclick="updateCartQty(\'' + item.key + '\',1)">+</button>' +
+          '</div>' +
+          '<span class="cart-item-price">' + fmt(item.price * item.qty) + ' FCFA</span>' +
+          '<button class="cart-item-del" onclick="removeFromCart(\'' + item.key + '\')" title="Retirer">&#10005;</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join("");
+}
+
+function openCart() {
+  renderCartItems();
+  updateCartUI();
+  document.getElementById("cartOverlay").classList.add("open");
+  document.getElementById("cartDrawer").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeCart() {
+  document.getElementById("cartOverlay").classList.remove("open");
+  document.getElementById("cartDrawer").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+function buildCartMsg() {
+  var lines = cart.map(function(item) {
+    var vt = item.varName ? " (" + item.varName + ")" : "";
+    return "\uD83C\uDF7D\uFE0F *" + item.name + "*" + vt + "\n   \uD83D\uDCE6 " + item.qty + " " + item.unit + "(s) \xD7 " + fmt(item.price) + " FCFA = *" + fmt(item.price * item.qty) + " FCFA*";
+  }).join("\n\n");
+  var total = fmt(cartTotal());
+  var msg = "Bonjour Chef Adams \uD83C\uDF7D\uFE0F\n\nJe souhaite commander :\n\n" + lines + "\n\n\uD83D\uDCB5 *TOTAL : " + total + " FCFA*\n\nPouvez-vous confirmer la disponibilite et les details de livraison ? Merci !";
+  return encodeURIComponent(msg);
+}
+
+function checkoutWA() {
+  if (!cart.length) { showToast("Votre panier est vide", "err"); return; }
+  window.open("https://wa.me/" + getFirstWaNum() + "?text=" + buildCartMsg(), "_blank");
+}
+
+function checkoutOrange() {
+  if (!cart.length) { showToast("Votre panier est vide", "err"); return; }
+  var lines = cart.map(function(item) {
+    var vt = item.varName ? " (" + item.varName + ")" : "";
+    return "\uD83C\uDF7D\uFE0F *" + item.name + "*" + vt + " \xD7 " + item.qty + " = *" + fmt(item.price * item.qty) + " FCFA*";
+  }).join("\n");
+  var msg = encodeURIComponent("Bonjour Chef Adams \uD83C\uDF7D\uFE0F\n\nJe souhaite payer via Orange Money :\n\n" + lines + "\n\n\uD83D\uDCB5 *TOTAL : " + fmt(cartTotal()) + " FCFA*\n\nVeuillez confirmer le num\xE9ro Orange Money. Merci !");
+  window.open("https://wa.me/" + getFirstWaNum() + "?text=" + msg, "_blank");
+}
