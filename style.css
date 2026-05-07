@@ -155,7 +155,7 @@ section{padding:64px 20px}
 
 /* STEPS */
 .steps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
-.step-card{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:22px 18px;text-align:center;transition:border-color var(--trans)}
+.step-card{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:2px 2px;text-align:center;transition:border-color var(--trans); height: 150px;}
 .step-card:hover{border-color:rgba(192,57,43,.25)}
 .step-num{width:44px;height:44px;border-radius:50%;background:rgba(192,57,43,.12);border:1px solid rgba(192,57,43,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-family:var(--ff-head);font-size:18px;color:var(--red-light)}
 .step-title{font-size:13px;font-weight:600;color:var(--white);margin-bottom:7px}
