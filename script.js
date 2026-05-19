@@ -831,9 +831,9 @@ var DEF_PRODUCTS=[
   ];
 
 var DEF_CONTACTS={
-  order:[{id:"c1",label:"Principal",number:"+237656929480"}],
-  mtn:[{id:"c2",label:"Compte MTN",number:"+237652964254"}],
-  orange:[{id:"c3",label:"Compte Orange",number:"+237656929480"}]
+  order:[{id:"c1",label:"Principal",number:"+237658591817"}],
+  mtn:[{id:"c2",label:"Compte MTN",number:"+237677244903"}],
+  orange:[{id:"c3",label:"Compte Orange",number:"+237658591817"}]
 };
 
 var state={products:[],contacts:JSON.parse(JSON.stringify(DEF_CONTACTS)),adminPwd:"chefadams2025",logged:false};
@@ -866,7 +866,7 @@ function waIcon(){return'<svg viewBox="0 0 24 24" fill="currentColor" style="wid
 
 function getMainImg(p,vi){var v=p.variants&&p.variants[vi||0];if(v&&v.photos&&v.photos.length&&v.photos[0]&&v.photos[0].length>10)return v.photos[0];if(p.photos&&p.photos.length&&p.photos[0]&&p.photos[0].length>10)return p.photos[0];return null;}
 function getAllPhotos(p,vi){var v=p.variants&&p.variants[vi||0];var vp=v&&v.photos?v.photos.filter(function(x){return x&&x.length>10;}):[];var pp=p.photos?p.photos.filter(function(x){return x&&x.length>10;}):[];return vp.length?vp:pp;}
-function getFirstWaNum(){var c=state.contacts&&state.contacts.order&&state.contacts.order[0];return c?c.number.replace(/\s/g,"").replace("+",""):"237656929480";}
+function getFirstWaNum(){var c=state.contacts&&state.contacts.order&&state.contacts.order[0];return c?c.number.replace(/\s/g,"").replace("+",""):"237658591817";}
 function updateWaLinks(){
   var n=getFirstWaNum();var href="https://wa.me/"+n;
   ["navWa","heroCta2","contactWa","footWa"].forEach(function(id){var el=document.getElementById(id);if(el)el.href=href;});
