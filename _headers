@@ -19,7 +19,7 @@
 # Page principale : network-first géré par SW,
 # mais on autorise un cache court côté CDN
 /index.html
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: no-cache, max-age=0, must-revalidate
 
 /data.json
   Cache-Control: no-cache
