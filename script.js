@@ -831,9 +831,9 @@ var DEF_PRODUCTS=[
   ];
 
 var DEF_CONTACTS={
-  order:[{id:"c1",label:"Principal",number:"+237658591871"}],
-  mtn:[{id:"c2",label:"Compte MTN",number:"+237677244903"}],
-  orange:[{id:"c3",label:"Compte Orange",number:"+237658591871"}]
+  order:[{id:"c1",label:"Principal",number:"+237656929480"}],
+  mtn:[{id:"c2",label:"Compte MTN",number:"+237652964254"}],
+  orange:[{id:"c3",label:"Compte Orange",number:"+237656929480"}]
 };
 
 var state={products:[],contacts:JSON.parse(JSON.stringify(DEF_CONTACTS)),adminPwd:"chefadams2025",logged:false};
